@@ -35,6 +35,7 @@ def login():
 		if 'mbasic_logout_button' in str(p):
 			with open('coki.log', 'w') as f:
 				f.write(cok)
+				f.close()
 				print '[√] login berhasil'
 				time.sleep(2)
 				menu()
@@ -66,23 +67,24 @@ def menu():
 			print '\n[1]. Aktifkan overload'
 			print '[2]. Hapus overload'
 			print '[0]. Keluar\n'
-			while True:
-				m=raw_input('[+] Pilih > ')
-				if m=="1":
-					aktif()
-				elif m=="2":
-					nonaktif()
-				elif m=="0":
-					exit()
-				else:
-					continue
-	except(requests.exceptions.ConnectionError):
-		exit('\n[!] Koneksi Bermasalah')
-	except(KeyError):
+			m=raw_input('[+] Pilih > ')
+			if m=="":
+				menu()
+			if m=="1":
+				aktif()
+			elif m=="2":
+				nonaktif()
+			elif m=="0":
+				exit()
+			else:
+				menu()
+	except(KeyError, ValueError):
 		print '[!] cookie invalid'
 		os.system('rm -rf coki.log')
 		time.sleep(2)
 		login()
+	except(requests.exceptions.ConnectionError):
+		exit('\n[!] Koneksi Bermasalah')
 	except IOError:
 		login()
 		
