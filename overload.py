@@ -44,7 +44,7 @@ def login():
 			time.sleep(2)
 			login()
 	except(requests.exceptions.ConnectionError):
-		exit('\n[!] Koneksi Bermasalah')
+		exit('[!] Koneksi Bermasalah')
 		
 def language():
 	r = ses.get(host_url+'/language.php', cookies=__cookie(),headers=head)
@@ -67,56 +67,71 @@ def menu():
 			print '\n[1]. Aktifkan overload'
 			print '[2]. Hapus overload'
 			print '[0]. Keluar\n'
-			m=raw_input('[+] Pilih > ')
-			if m=="":
-				menu()
-			if m=="1":
-				aktif()
-			elif m=="2":
-				nonaktif()
-			elif m=="0":
-				exit()
-			else:
-				menu()
-	except(KeyError, ValueError):
-		print '[!] cookie invalid'
+			while True:
+				m=raw_input('[+] Pilih > ')
+				if m=="1":
+					aktif()
+				elif m=="2":
+					nonaktif()
+				elif m=="0":
+					exit()
+				else:
+					continue
+		else:
+			print '[!] cookie mati'
+			os.system('rm -rf coki.log')
+			time.sleep(2)
+			login()
+	except(requests.exceptions.ConnectionError):
+		exit('[!] Koneksi Bermasalah')
+	except(ValueError):
+		print '[!] cookie mati'
 		os.system('rm -rf coki.log')
 		time.sleep(2)
 		login()
-	except(requests.exceptions.ConnectionError):
-		exit('\n[!] Koneksi Bermasalah')
 	except IOError:
 		login()
 		
 def aktif():
 	language()
-	print('[•] silahkan tunggu beberapa menit ... ')
 	next='/editprofile.php?type=contact&edit=website&refid=17'
-	fo=open("font.txt", "r").read()
-	for c in range(10):
-		u=ses.get(host_url+next, cookies=__cookie(), headers=head)
-		x=parser(u.text, "html.parser")
-		data={
-			"fb_dtsg":x.find("input", {"name":"fb_dtsg"})["value"],
-			"jazoest": x.find("input", {"name":"jazoest"})["value"],
-			"type":"contact",
-			"edit":"website",
-			"add_website":"1",
-			"new_info":"https://overload_rizky.com/"+fo,
-			"save":"Tambahkan"
-			}
-		y=ses.post(host_url+'/a/editprofile.php', data=data, cookies=__cookie(), headers=head)
-	exit('\r[√] sukses mengaktifkan')
+	try:
+		print('[•] silahkan tunggu beberapa menit ... ')
+		fo=open("font.txt", "r").read()
+		for c in range(10):
+			u=ses.get(host_url+next, cookies=__cookie(), headers=head)
+			x=parser(u.text, "html.parser")
+			data={
+				"fb_dtsg":x.find("input", {"name":"fb_dtsg"})["value"],
+				"jazoest": x.find("input", {"name":"jazoest"})["value"],
+				"type":"contact",
+				"edit":"website",
+				"add_website":"1",
+				"new_info":"https://overload_rizky.com/"+fo,
+				"save":"Tambahkan"
+				}
+			y=ses.post(host_url+'/a/editprofile.php', data=data, cookies=__cookie(), headers=head)
+		exit('[√] sukses mengaktifkan')
+	except requests.exceptions.ConnectionError:
+		exit('[!] Koneksi Bermasalah')
+	except IOError :
+		exit("[!] file 'font.txt' tidak ada")
 	
 def nonaktif():
 	language()
-	print('[•] sedang menghapus... ')
-	c=ses.get(host_url+'/editprofile.php?type=contact&edit=website&refid=17', cookies=__cookie(), headers=head)
-	h=parser(c.text, "html.parser")
-	for f in h.find_all('a', string='Hapus'):
-		k=f['href']
-		y=ses.get(host_url+str(k), cookies=__cookie())
-	exit('[√] sukses menghapus')
+	try:
+		c=ses.get(host_url+'/editprofile.php?type=contact&edit=website&refid=17', cookies=__cookie(), headers=head)
+		h=parser(c.text, "html.parser")
+		if 'Hapus' in str(h):
+			print '[•] sedang menghapus... '
+			for f in h.find_all('a', string='Hapus', href=True):
+				k=f['href']
+				y=ses.get(host_url+str(k), cookies=__cookie())
+			exit('[√] sukses menghapus')
+		else:
+			exit('[!] overload sudah dihapus')
+	except requests.exceptions.ConnectionError:
+		exit('[!] Koneksi Bermasalah')
 	
 if __name__ == '__main__':
 	menu()
